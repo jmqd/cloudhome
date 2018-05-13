@@ -29,3 +29,18 @@ storage location.
 
 1. Smart syncing
 2. Daemonize
+
+## concrete choices
+
+### libraries
+
+- [Watchdog][] seems like the correct library to listen to system events
+and trigger a backup event
+
+### architecture
+
+#### daemon strategy
+
+Unclear is this is best solved in code or thru the system.
+
+[Watchdog]: https://pythonhosted.org/watchdog/
