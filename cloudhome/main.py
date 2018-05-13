@@ -1,20 +1,22 @@
 import watchdog
 import os
-
-HOME_DIRECTORY = os.path.expanduser("~")
+import config as _config
+from cloud import Storage
+from sync import SyncTask
 
 class CloudHome:
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: _config.Config, storage: Storage) -> None:
         self.config = config
 
     def start(self) -> None:
-        local_hash = self.determine_local_hash()
+        task = SyncTask(self.config)
+        task.run()
+
 
 def initialize() -> None:
-    with open(CONFIGURATION_LOCATION, 'r') as f:
-        config = json.load(f)
-
-    cloudhome = CloudHome(config)
+    config = _config.load()
+    storage = Storage(config)
+    cloudhome = CloudHome(config, storage)
     cloudhome.start()
 
 if __name__ == '__main__':
