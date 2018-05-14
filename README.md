@@ -3,8 +3,9 @@
 ## design
 
 `cloudhome` aims to be a background daemon process that listens to changes
-to `~` and backs up to a cloud location. S3 is chosen as the cloud-backed
-storage location.
+to a confgiruable list of source directories and backs up to a cloud location.
+S3 is chosen as the cloud-backed storage location. In addition, it will
+"backwards sync" if the storage has newer bits.
 
 ### requirements
 
