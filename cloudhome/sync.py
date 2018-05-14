@@ -7,10 +7,11 @@ class SyncTask:
         self.storage = storage
 
     def run(self):
-        self.local.update_local_manifest()
-        storage_manifest = self.storage.read_manifest()
-        local_manifest = self.local.read_manifest()
+        self.update_local_manifest()
+        #storage_manifest = self.storage.read_manifest()
+        #local_manifest = self.local.read_manifest()
 
     def update_local_manifest(self):
-        local_files = self.local.list()
+        for filename in self.local.list_all():
+            print(filename)
 
