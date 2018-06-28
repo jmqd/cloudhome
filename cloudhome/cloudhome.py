@@ -7,7 +7,7 @@ from calendar import timegm
 import json
 import os
 
-LOCAL_DIR = os.path.expanduser("~/cloud")
+LOCAL_DIR = os.path.expanduser("~/cloud/mcqueen.jordan")
 LOCAL_MANIFEST = os.path.join(LOCAL_DIR, ".manifest.json")
 session = boto3.Session(profile_name = 'mcqueen.jordan')
 
