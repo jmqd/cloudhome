@@ -45,7 +45,7 @@ def sync_down_metadata(s3, manifest, k, v, bucket):
         'content-length': metadata['ResponseMetadata']['HTTPHeaders']['content-length']
         }
 
-    if latest_metadata != v['s3_metadata']:
+    if latest_metadata != v.get('s3_metadata', None):
         v['s3_metadata'] = latest_metadata
         write_json(manifest, LOCAL_MANIFEST)
         logging.info("Wrote new manifest data for {}.".format(k))
