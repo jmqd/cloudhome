@@ -3,12 +3,14 @@ import boto3
 import logging
 import hashlib
 import time
+import config
 from calendar import timegm
 import json
 import os
 
 CLOUDHOME_DIR = os.path.expanduser(os.environ.get("CLOUDHOME"))
 LOCAL_DIR = os.path.join(CLOUDHOME_DIR, os.environ.get("CLOUDHOME_BUCKET_NAME"))
+CLOUDHOME_CONFIG = os.path.join(CLOUDHOME_DIR, "config.json")
 LOCAL_MANIFEST = os.path.join(LOCAL_DIR, ".manifest.json")
 LOG_FILENAME = "/tmp/cloudhome.log"
 
@@ -16,12 +18,17 @@ LOG_FILENAME = "/tmp/cloudhome.log"
 session = boto3.Session(profile_name = 'mcqueen.jordan')
 
 def main():
-    logging.basicConfig(filename=LOG_FILENAME, level = logging.INFO)
+    configure_logging()
     s3 = session.client('s3')
     manifest = read_json(LOCAL_MANIFEST)
+
+def sync_bucket(s3, manifest):
     logging.info("Beginning synchronization for {}".format(manifest.get('local_dir')))
     conditional_bidirectional_sync(s3, manifest)
     logging.info("Finished synchronization for {}".format(manifest.get('local_dir')))
+
+def configure_logging():
+    logging.basicConfig(filename=LOG_FILENAME, level = logging.INFO)
 
 
 def conditional_bidirectional_sync(s3, manifest):
