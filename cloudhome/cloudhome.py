@@ -7,15 +7,21 @@ from calendar import timegm
 import json
 import os
 
-LOCAL_DIR = os.path.expanduser("~/cloud/mcqueen.jordan")
+CLOUDHOME_DIR = os.path.expanduser(os.environ.get("CLOUDHOME"))
+LOCAL_DIR = os.path.join(CLOUDHOME_DIR, os.environ.get("CLOUDHOME_BUCKET_NAME"))
 LOCAL_MANIFEST = os.path.join(LOCAL_DIR, ".manifest.json")
+LOG_FILENAME = "/tmp/cloudhome.log"
+
+
 session = boto3.Session(profile_name = 'mcqueen.jordan')
 
 def main():
-    logging.basicConfig(filename="/tmp/cloudhome.log", level = logging.INFO)
+    logging.basicConfig(filename=LOG_FILENAME, level = logging.INFO)
     s3 = session.client('s3')
     manifest = read_json(LOCAL_MANIFEST)
+    logging.info("Beginning synchronization for {}".format(manifest.get('local_dir')))
     conditional_bidirectional_sync(s3, manifest)
+    logging.info("Finished synchronization for {}".format(manifest.get('local_dir')))
 
 
 def conditional_bidirectional_sync(s3, manifest):
