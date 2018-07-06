@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import boto3
 from botocore.exceptions import EndpointConnectionError
 import logging
@@ -57,8 +56,8 @@ def conditional_bidirectional_sync(s3, manifest):
         if metadata.get('local_etag') == metadata['s3_metadata']['etag']:
             logging.info("Short circuiting: The remote and local hashes for {} were equal.".format(key))
         else:
-            sync_file_down_if_stale(s3, key, metadata, bucket, manifest['root'])
-            sync_file_up_if_newer(s3, key, metadata, bucket)
+            sync_file_down_if_stale(s3, key, metadata, bucket, root)
+            sync_file_up_if_newer(s3, key, metadata, bucket, root)
 
         logging.info("Completed bi-directional sync for {}".format(key))
 
@@ -102,13 +101,13 @@ def sync_file_down_if_stale(s3, k, v, bucket, root):
             logging.error("Error downloading {}: {}".format(k, e))
 
 
-def sync_file_up_if_newer(s3, k, v, bucket):
+def sync_file_up_if_newer(s3, k, v, bucket, root):
     remote_modified_at = v['s3_metadata']['last-modified']
     local_modified_at = v.get('local_last_modified', 0)
 
     if remote_modified_at < local_modified_at:
         try:
-            s3.upload_file(os.path.join(manifest['root'], k), bucket, k)
+            s3.upload_file(os.path.join(root, k), bucket, k)
             logging.info("Uploaded new file: {} had been locally updated.".format(k))
         except Exception as e:
             logging.error("Problem uploading {}: {}".format(k, e))
