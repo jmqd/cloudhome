@@ -13,6 +13,16 @@ LOG_FILENAME = "/tmp/cloudhome.log"
 
 
 def main():
+    continuously_sync()
+
+
+def continuously_sync():
+    while True:
+        sync_cloudhome()
+        time.sleep(15)
+
+
+def sync_cloudhome():
     config = Config(read_json(CLOUDHOME_CONFIG))
     configure_logging(config.log_file)
     session = boto3.Session(profile_name = config.credential_profile)
