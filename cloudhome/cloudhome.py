@@ -32,10 +32,13 @@ def sync_cloudhome():
     logging.info("Opened config file {}, proceeding to sync {} buckets".format(
         CLOUDHOME_CONFIG, len(bucket_manifest_filenames)))
 
+    sync_all_buckets(s3, bucket_manifest_filenames)
+    logging.info("Finished syncing...".format(CLOUDHOME_CONFIG))
+
+
+def sync_all_buckets(s3, bucket_manifest_filenames):
     for bucket_manifest in (read_json(fn) for fn in bucket_manifest_filenames):
         sync_bucket(s3, bucket_manifest)
-
-    logging.info("Finished syncing...".format(CLOUDHOME_CONFIG))
 
 
 def sync_bucket(s3, manifest):
@@ -109,7 +112,6 @@ def sync_file_down_if_stale(s3, k, v, bucket, root):
                 k, v['s3_metadata']['last-modified'], v['local_last_modified']))
         except Exception as e:
             logging.error("Error downloading {}: {}".format(k, e))
-
 
 def sync_file_up_if_newer(s3, k, v, bucket, root):
     remote_modified_at = v['s3_metadata']['last-modified']
