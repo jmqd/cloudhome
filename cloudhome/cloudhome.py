@@ -94,8 +94,6 @@ def sync_down_metadata(s3, manifest, k, v, bucket, root, manifest_filename):
         return
     except Exception as e:
         logging.error("Issue HEADing {} from {}; error {}, code {}".format(k, bucket, e, e.response['Error']['Code']))
-
-        logging.info('e.response: {}'.format(e.response))
         if e.response['Error']['Code'] == '404':
             latest_metadata = {'last-modified': 0, 'etag': None, 'context-length': None}
         else:
