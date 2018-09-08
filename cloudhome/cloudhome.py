@@ -3,6 +3,7 @@ from botocore.exceptions import EndpointConnectionError
 import logging
 import hashlib
 import time
+import sys
 from config import Config
 from calendar import timegm
 import json
@@ -32,7 +33,12 @@ def sync_cloudhome():
     logging.info("Opened config file {}, proceeding to sync {} buckets".format(
         CLOUDHOME_CONFIG, len(bucket_manifest_filenames)))
 
-    sync_all_buckets(s3, bucket_manifest_filenames)
+    try:
+        sync_all_buckets(s3, bucket_manifest_filenames)
+    except Exception as e:
+        logging.error("Fatal crash: {}".format(e))
+        sys.exit(1)
+
     logging.info("Finished syncing...".format(CLOUDHOME_CONFIG))
 
 
@@ -78,18 +84,22 @@ def conditional_bidirectional_sync(s3, manifest):
 def sync_down_metadata(s3, manifest, k, v, bucket, root, manifest_filename):
     try:
         metadata = s3.head_object(Bucket = bucket, Key = k)
+        latest_metadata = {
+            'last-modified': timegm(time.strptime(metadata['ResponseMetadata']['HTTPHeaders']['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')),
+            'etag': metadata['ResponseMetadata']['HTTPHeaders']['etag'].strip("'\""),
+            'content-length': metadata['ResponseMetadata']['HTTPHeaders']['content-length']
+            }
     except EndpointConnectionError as e:
         logging.error("Cannot make a connection: {}".format(e))
         return
     except Exception as e:
         logging.error("Issue HEADing {} from {}; error {}, code {}".format(k, bucket, e, e.response['Error']['Code']))
-        return
 
-    latest_metadata = {
-        'last-modified': timegm(time.strptime(metadata['ResponseMetadata']['HTTPHeaders']['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')),
-        'etag': metadata['ResponseMetadata']['HTTPHeaders']['etag'].strip("'\""),
-        'content-length': metadata['ResponseMetadata']['HTTPHeaders']['content-length']
-        }
+        logging.info('e.response: {}'.format(e.response))
+        if e.response['Error']['Code'] == '404':
+            latest_metadata = {'last-modified': 0, 'etag': None, 'context-length': None}
+        else:
+            return
 
     if latest_metadata != v.get('s3_metadata', None):
         v['s3_metadata'] = latest_metadata
@@ -114,7 +124,7 @@ def sync_file_down_if_stale(s3, k, v, bucket, root):
             logging.error("Error downloading {}: {}".format(k, e))
 
 def sync_file_up_if_newer(s3, k, v, bucket, root):
-    remote_modified_at = v['s3_metadata']['last-modified']
+    remote_modified_at = v['s3_metadata'].get('last-modified', 0)
     local_modified_at = v.get('local_last_modified', 0)
 
     if remote_modified_at < local_modified_at:
