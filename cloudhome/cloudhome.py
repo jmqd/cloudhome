@@ -127,7 +127,11 @@ def get_remote_metadata(s3, key, bucket):
         return
     except Exception as e:
         logging.error("Issue HEADing {} from {}; error {}, code {}".format(key, bucket, e, e.response['Error']['Code']))
-        return
+
+        if e.response['Error']['Code'] == '404':
+            return {'last-modified': 0, 'etag': None, 'content-length': None}
+        else:
+            return
 
     return {
         'last-modified': timegm(time.strptime(metadata['ResponseMetadata']['HTTPHeaders']['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')),
