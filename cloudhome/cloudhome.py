@@ -7,7 +7,6 @@ import sys
 from config import Config
 from calendar import timegm
 import json
-import watchdog
 import os
 
 CLOUDHOME_CONFIG = os.path.expanduser("~/.cloudhome.json")
