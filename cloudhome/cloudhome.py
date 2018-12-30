@@ -130,7 +130,7 @@ def sync_down_metadata(s3, manifest, k, v, bucket, root, manifest_filename):
         return
     elif latest_metadata != v.get('s3_metadata', None):
         v['s3_metadata'] = latest_metadata
-        write_json(manifest, manifest_filename)
+        write_manifest(manifest, manifest_filename)
         logging.info("Wrote new manifest data for {}.".format(k))
     else:
         logging.debug("Metadata unchanged for {}. Wrote nothing locally.".format(k))
@@ -198,6 +198,11 @@ def sync_file_up_if_newer(s3, k, v, bucket, root):
         except Exception as e:
             logging.error("Problem uploading {}: {}".format(k, e))
 
+
+def write_manifest(manifest, manifest_filename):
+    new_manifest = manifest.copy()
+    new_manifest['items'] = {k:{'s3_metadata': v.get('s3_metadata', {})} for k, v in manifest['items'].items()}
+    write_json(new_manifest, manifest_filename)
 
 def write_json(data, path):
     with open(path, 'w') as f:
