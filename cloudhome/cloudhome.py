@@ -1,11 +1,13 @@
 import boto3
 from botocore.exceptions import EndpointConnectionError
 import logging
+import threading
 import logging.handlers
 import hashlib
 import time
 import sys
 from config import Config
+from log_rotation import passively_rotate_logs
 from calendar import timegm
 import json
 import os
@@ -20,7 +22,16 @@ S3_ETAG_HASHING_BLOCK_SIZE = 10240
 def main():
     config = Config(read_json(CLOUDHOME_CONFIG))
     configure_app(config)
+    spawn_background_tasks(config)
     continuously_sync(config)
+
+
+def spawn_background_tasks(config):
+    log_rotation = threading.Thread(
+        target = passively_rotate_logs,
+        args = (config.log_file, APP_NAME))
+
+    log_rotation.start()
 
 
 def continuously_sync(config):
