@@ -11,7 +11,7 @@ import os
 
 CLOUDHOME_CONFIG = os.path.expanduser("~/.cloudhome.json")
 LOG_FILENAME = "/tmp/cloudhome.log"
-SYNC_FREQUENCY_IN_HERTZ = 1/5
+SYNC_FREQUENCY_IN_HERTZ = 1
 
 
 def main():
