@@ -25,7 +25,6 @@ def main():
     spawn_background_tasks(config)
     continuously_sync(config)
 
-
 def spawn_background_tasks(config):
     log_rotation = threading.Thread(
         target = passively_rotate_logs,
@@ -33,14 +32,12 @@ def spawn_background_tasks(config):
 
     log_rotation.start()
 
-
 def continuously_sync(config):
     while True:
         sync_cloudhome(config)
 
         # we get the inverse of the hertz to determine the seconds to sleep
         time.sleep(int(SYNC_FREQUENCY_IN_HERTZ ** -1))
-
 
 def configure_app(config):
     configure_logging(config.log_file)
@@ -66,19 +63,16 @@ def sync_cloudhome(config):
 
     log.info("Finished syncing...".format(CLOUDHOME_CONFIG))
 
-
 def sync_all_buckets(s3, bucket_manifest_filenames):
     # TODO: These IO-driven tasks (syncing buckets) are all done serially.
     # TODO: Consider submitting these tasks to a threadpool to concurrently execute?
     for bucket_manifest in (read_json(fn) for fn in bucket_manifest_filenames):
         sync_bucket(s3, bucket_manifest)
 
-
 def sync_bucket(s3, manifest):
     log.debug("Beginning sync for {}".format(manifest.get('root')))
     conditional_bidirectional_sync(s3, manifest)
     log.debug("Done with sync for {}".format(manifest.get('root')))
-
 
 def configure_logging(log_file):
     log = logging.getLogger(APP_NAME)
@@ -87,7 +81,6 @@ def configure_logging(log_file):
     file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
     file_handler.setLevel(logging.INFO)
     log.addHandler(file_handler)
-
 
 def conditional_bidirectional_sync(s3, manifest):
     '''
@@ -112,7 +105,6 @@ def conditional_bidirectional_sync(s3, manifest):
         record_local_stats(root, key, metadata)
         bidirectionally_sync_file(key, metadata, bucket, root, s3)
 
-
 def bidirectionally_sync_file(key, metadata, bucket, root, s3):
     '''
     If the remote and local files have different hashes, the file
@@ -124,7 +116,6 @@ def bidirectionally_sync_file(key, metadata, bucket, root, s3):
         sync_file_down_if_stale(s3, key, metadata, bucket, root)
         sync_file_up_if_newer(s3, key, metadata, bucket, root)
         log.debug("Completed bi-directional sync for {}".format(key))
-
 
 def sync_manifest(manifest_filename, bucket, s3, root):
     '''
@@ -141,7 +132,6 @@ def sync_manifest(manifest_filename, bucket, s3, root):
     record_local_stats(root, manifest_filename, metadata)
     bidirectionally_sync_file(os.path.basename(manifest_filename), metadata, bucket, root, s3)
 
-
 def sync_down_metadata(s3, manifest, k, v, bucket, root, manifest_filename):
     '''Gets the remote metadata from S3 and writes it to the local manifest file.'''
     latest_metadata = get_remote_metadata(s3, k, bucket)
@@ -154,7 +144,6 @@ def sync_down_metadata(s3, manifest, k, v, bucket, root, manifest_filename):
         log.info("Wrote new manifest data for {}.".format(k))
     else:
         log.debug("Metadata unchanged for {}. Wrote nothing locally.".format(k))
-
 
 def get_remote_metadata(s3, key, bucket):
     '''Returns the remote S3 metadata for a given object.
@@ -181,13 +170,11 @@ def get_remote_metadata(s3, key, bucket):
         'content-length': metadata['ResponseMetadata']['HTTPHeaders']['content-length']
         }
 
-
 def record_local_stats(root, key, metadata):
     '''Populates a `metadata` dictionary with the local stats for a given file.'''
     mtime, st_size, local_etag = calculate_local_stats(root, key)
     metadata['local_last_modified'], metadata['local_size'] = mtime, st_size
     metadata['local_etag'] = local_etag
-
 
 def calculate_local_stats(root, key):
     try:
@@ -196,7 +183,6 @@ def calculate_local_stats(root, key):
     except FileNotFoundError as e:
         log.info("{} wasn't found. Returning 0, 0, None. Probably a new file.".format(key))
         return 0, 0, None
-
 
 def sync_file_down_if_stale(s3, k, v, bucket, root):
     if v.get('local_last_modified', 0) < v['s3_metadata']['last-modified']:
@@ -218,7 +204,6 @@ def sync_file_up_if_newer(s3, k, v, bucket, root):
         except Exception as e:
             log.error("Problem uploading {}: {}".format(k, e))
 
-
 def write_manifest(manifest, manifest_filename):
     new_manifest = manifest.copy()
     new_manifest['items'] = {k:{'s3_metadata': v.get('s3_metadata', {})} for k, v in manifest['items'].items()}
@@ -228,15 +213,12 @@ def write_json(data, path):
     with open(path, 'w') as f:
         json.dump(data, f, indent = 4)
 
-
 def read_json(manifest_path):
     with open(manifest_path, 'r') as f:
         return json.load(f)
 
-
 def remote_and_local_hashes_are_equal(metadata):
     return metadata['s3_metadata']['etag'] == metadata.get('local_etag')
-
 
 def calculate_local_etag(path):
     '''
