@@ -57,11 +57,13 @@ def sync_cloudhome(config):
 
     try:
         sync_all_buckets(s3, bucket_manifest_filenames)
+        log.info("Successfully synchronized all buckets ({}).".format(bucket_manifest_filenames))
+    except EndpointConnectionError as e:
+        log.warn("Constant back-off of 10 seconds sleeping. Cannot reach AWS: {}".format(e))
+        time.sleep(10)
     except Exception as e:
         log.error("Fatal crash: {}".format(e))
         sys.exit(1)
-
-    log.info("Finished syncing...".format(CLOUDHOME_CONFIG))
 
 def sync_all_buckets(s3, bucket_manifest_filenames):
     # TODO: These IO-driven tasks (syncing buckets) are all done serially.
@@ -154,7 +156,7 @@ def get_remote_metadata(s3, key, bucket):
         metadata = s3.head_object(Bucket = bucket, Key = key)
     except EndpointConnectionError as e:
         log.error("Cannot make a connection: {}".format(e))
-        return
+        raise
     except Exception as e:
         log.error("Issue HEADing {} from {}; error {}, code {}".format(
             key, bucket, e, e.response['Error']['Code']))
