@@ -1,0 +1,7 @@
+[package]
+name = "cloudhome"
+version = "0.1.0"
+authors = ["Jordan McQueen <jordan@whoami.sh>"]
+edition = "2018"
+
+[dependencies]
