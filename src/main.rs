@@ -56,8 +56,11 @@ fn poll_for_changes(config: Config, s3: S3Client) {
         });
 
     // The main loop to receive file-system events. Upon a new write event, we'll
-    // trigger a write to S3. We'll probably want to spawn a new thread on each
-    // Ok() pattern match to write to S3, to avoid starvation of the rx channel.
+    // trigger a write to S3. We'll probably want to submit a new task to a
+    // SetQueue-backed ThreadPool on every Ok() pattern match to write to S3, to
+    // avoid starvation of the rx channel. We can use a set-backed queue here
+    // because there's no sense uploading a file twice -- we'd rather just
+    // upload the most recent one.
     loop {
         match rx.recv() {
             Ok(event) => println!("{:?}", event),
