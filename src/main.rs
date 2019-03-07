@@ -32,6 +32,12 @@ fn main() {
 
     // We'll want to spawn a thread for this.
     poll_for_changes(config, s3);
+
+    // In additional to polling the local filesystem, we'll want to poll the
+    // cloud files somehow. The previous implementation simply HEADed the files
+    // and computed the hashes of each, but I suspect there's a better solution.
+    // However, if need be, that solution will work.
+    // poll_for_remote_changes();
 }
 
 fn poll_for_changes(config: Config, s3: S3Client) {
