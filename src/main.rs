@@ -15,6 +15,7 @@ use std::time::Duration;
 
 static CLOUDHOME_CONFIG_PATH: &'static str = "~/.cloudhome.json";
 
+/// Represent the cloudhome configuration state (read from ~/.cloudhome.json)
 #[derive(Debug, Deserialize)]
 struct Config {
     cloudhome: String,
@@ -23,6 +24,13 @@ struct Config {
     bucket_names: Vec<String>,
 }
 
+/// Cloudhome does two things, which are symmetrical to each other, in pursuit of
+/// the singular goal: synchronizing your local and cloud-storage state.
+///
+/// 1. Polls tracked file system directory roots for changes, relaying changes
+///    to the cloud storage.
+/// 2. Polls the cloud storage for changes, and relays those changes to the
+///    local file system.
 fn main() {
     let config = read_configuration();
     let s3 = S3Client::new(Region::UsWest2);
@@ -31,16 +39,19 @@ fn main() {
     // spawn_log_rotator()
 
     // We'll want to spawn a thread for this.
-    poll_for_changes(config, s3);
+    poll_for_local_changes(config, s3);
 
-    // In additional to polling the local filesystem, we'll want to poll the
+    // In additional to polling the local file system, we'll want to poll the
     // cloud files somehow. The previous implementation simply HEADed the files
     // and computed the hashes of each, but I suspect there's a better solution.
     // However, if need be, that solution will work.
     // poll_for_remote_changes();
 }
 
-fn poll_for_changes(config: Config, s3: S3Client) {
+/// Polls the local file system for changes in the relevant cloudhome directory
+/// paths. Upon receiving write events in the local filesystem, we spawn a task
+/// to PUT those changes to the cloud storage.
+fn poll_for_local_changes(config: Config, s3: S3Client) {
     // Create a channel to receive the events.
     let (tx, rx) = channel();
 
@@ -75,6 +86,7 @@ fn poll_for_changes(config: Config, s3: S3Client) {
     }
 }
 
+/// A utility function to read and marshal the cloudhome configuration.
 fn read_configuration() -> Config {
     let path = shellexpand::tilde(CLOUDHOME_CONFIG_PATH).to_string();
     let config_data: String = std::fs::read_to_string(path).expect("Bad file.");
