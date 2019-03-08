@@ -1,7 +1,7 @@
 enum SyncState {
     Equilibrium,
     CloudAhead,
-    CloudBehind
+    CloudBehind,
 }
 
 impl SyncState {
