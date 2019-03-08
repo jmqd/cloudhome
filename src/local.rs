@@ -12,7 +12,8 @@ pub fn poll_changes(paths: &Vec<String>) {
     // Automatically select the best implementation for your platform.
     // You can also access each implementation directly e.g. INotifyWatcher.
     let mut watcher: RecommendedWatcher =
-        Watcher::new(tx, Duration::from_secs(2)).expect("Constructing watcher failed");
+        Watcher::new(tx, Duration::from_secs(2))
+            .expect("Constructing watcher failed");
 
     // Watch all cloudhome paths. All files and directories in these paths and
     // below will be monitored for changes.
