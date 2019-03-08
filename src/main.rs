@@ -22,8 +22,6 @@ fn main() {
     let s3 = S3Client::new(Region::UsWest2);
     // configure logging
 
-    // spawn_log_rotator()
-
     // We'll want to spawn a thread for this.
     local::poll_changes(config.cloudhome_paths().as_ref());
 
