@@ -6,6 +6,7 @@ enum SyncState {
 
 impl SyncState {
     fn determine(s3: S3Client, local_path: &String) -> SyncState {
+        // TODO(mcqueenjordan)
         // compare remote and local hashes of the manifest
         // return Equilibrium if true
         // else return
@@ -15,5 +16,5 @@ impl SyncState {
 }
 
 pub fn poll_changes(s3: S3Client) {
-    // TODO
+    // TODO(mcqueenjordan)
 }

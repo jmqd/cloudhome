@@ -20,11 +20,12 @@ use rusoto_s3::S3Client;
 fn main() {
     let config = config::Config::read();
     let s3 = S3Client::new(Region::UsWest2);
-    // configure logging
+    // TODO(mcqueenjordan): configure logging
 
-    // We'll want to spawn a thread for this.
+    // TODO(mcqueenjordan): We'll want to spawn a thread for this.
     local::poll_changes(config.cloudhome_paths().as_ref());
 
+    // TODO(mcqueenjordan):
     // In additional to polling the local file system, we'll want to poll the
     // cloud files somehow. The previous implementation simply HEADed the files
     // and computed the hashes of each, but I suspect there's a better solution.

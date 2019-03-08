@@ -30,6 +30,7 @@ pub fn poll_changes(paths: &Vec<String>) {
     // upload the most recent one.
     loop {
         match rx.recv() {
+            // TODO(mcqueenjordan) yield the task to actually do the thing here
             Ok(event) => println!("{:?}", event),
             Err(e) => println!("watch error: {:?}", e),
         }
