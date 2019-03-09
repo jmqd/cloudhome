@@ -20,16 +20,15 @@ use std::time::Duration;
 /// 2. Polls the cloud storage for changes, and relays those changes to the
 ///    local file system.
 fn main() {
-  let config = config::Config::read();
-  let s3 = S3Client::new(Region::UsWest2);
-  // TODO(mcqueenjordan): configure logging
+    let config = config::Config::read();
+    let s3 = S3Client::new(Region::UsWest2);
+    // TODO(mcqueenjordan): configure logging
 
-  // TODO(mcqueenjordan): We'll want to spawn a thread for this.
-  local::poll_changes(config.cloudhome_paths().as_ref());
+    // TODO(mcqueenjordan): We'll want to spawn a thread for this.
+    local::poll_changes(config.cloudhome_paths().as_ref());
 
-  // TODO(mcqueenjordan):
-  config
-    .cloudhome_paths()
-    .iter()
-    .for_each(|path| cloud::poll_changes(s3, path, Duration::from_secs(15)));
+    // TODO(mcqueenjordan):
+    config.cloudhome_paths().iter().for_each(|path| {
+        cloud::poll_changes(s3, path, Duration::from_secs(15))
+    });
 }
