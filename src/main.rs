@@ -4,11 +4,13 @@ extern crate rusoto_core;
 extern crate rusoto_s3;
 extern crate shellexpand;
 
+mod cloud;
 mod config;
 mod local;
 
 use rusoto_core::Region;
 use rusoto_s3::S3Client;
+use std::time::Duration;
 
 /// Cloudhome does two things, which are symmetrical to each other, in pursuit of
 /// the singular goal: synchronizing your local and cloud-storage state.
@@ -26,5 +28,8 @@ fn main() {
   local::poll_changes(config.cloudhome_paths().as_ref());
 
   // TODO(mcqueenjordan):
-  cloud::poll_changes();
+  config
+    .cloudhome_paths()
+    .iter()
+    .for_each(|path| cloud::poll_changes(s3, path, Duration::from_secs(15)));
 }
