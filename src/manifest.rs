@@ -1,5 +1,3 @@
-extern crate toml;
-
 use futures::{Future, Stream};
 use rusoto_s3::{GetObjectRequest, HeadObjectRequest, S3Client, S3};
 use std::fs::read_to_string;
