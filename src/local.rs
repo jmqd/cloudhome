@@ -44,11 +44,12 @@ pub fn poll_changes(paths: &Vec<String>) {
     }
 }
 
-/// This is a proxy of S3s implementation to calculate the etag for single-part objects.
-
+/// This is an implementation of S3's MD5 e-tag hashing algorithm for local files.
+///
 /// Note that multi-part uploaded objects will hash differently than this
 /// function on S3s service, so we cannot rely on hash comparisons if the
-/// S3 object was multi-part uploaded.
+/// S3 object was multi-part uploaded. This generally only affects objects
+/// larger than 5GB.
 pub fn calculate_hash(file_path: &String) -> String {
     let file = match std::fs::File::open(file_path) {
         Ok(file) => file,
