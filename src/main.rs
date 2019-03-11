@@ -2,12 +2,15 @@
 extern crate serde_derive;
 extern crate rusoto_core;
 extern crate rusoto_s3;
+extern crate serde_json;
 extern crate shellexpand;
 
 mod cloud;
 mod config;
 mod local;
+pub mod manifest;
 
+use manifest::*;
 use rusoto_core::Region;
 use rusoto_s3::S3Client;
 use std::time::Duration;
@@ -30,5 +33,6 @@ fn main() {
     // TODO(mcqueenjordan):
     config.cloudhome_paths().iter().for_each(|path| {
         cloud::poll_changes(s3, path, Duration::from_secs(15))
+        cloud::poll_changes(&s3, path, Duration::from_secs(15))
     });
 }
