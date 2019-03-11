@@ -6,16 +6,16 @@ static MANIFEST_KEY: &'static str = "manifest_v2.json";
 
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
-    bucket_name: String,
-    files: Vec<FileMetadata>,
+    pub bucket_name: String,
+    pub files: Vec<FileMetadata>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FileMetadata {
-    key: String,
-    hash: String,
-    last_modified: u64,
-    content_length: u64,
+    pub key: String,
+    pub hash: String,
+    pub last_modified: i64,
+    pub content_length: i64,
 }
 
 impl Manifest {
