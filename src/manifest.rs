@@ -1,5 +1,5 @@
 use futures::{Future, Stream};
-use rusoto_s3::{GetObjectRequest, HeadObjectRequest, S3Client, S3};
+use rusoto_s3::{GetObjectRequest, S3Client, S3};
 use std::fs::read_to_string;
 
 static MANIFEST_KEY: &'static str = "manifest_v2.json";
@@ -19,24 +19,6 @@ pub struct FileMetadata {
 }
 
 impl Manifest {
-    pub fn hash_same_as_cloud(&self, s3: &S3Client) -> bool {
-        let request = HeadObjectRequest {
-            bucket: self.bucket_name.clone(),
-            key: MANIFEST_KEY.to_string(),
-            ..Default::default()
-        };
-
-        println!(
-            "{}",
-            s3.head_object(request)
-                .sync()
-                .expect("HeadObject failed.")
-                .e_tag
-                .expect("Etag malformed")
-        );
-        return false;
-    }
-
     pub fn from_cloud(&self, s3: &S3Client) -> Manifest {
         let request = GetObjectRequest {
             bucket: self.bucket_name.to_owned(),

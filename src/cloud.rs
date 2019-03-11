@@ -1,5 +1,8 @@
+extern crate chrono;
+
 use crate::manifest::*;
-use rusoto_s3::S3Client;
+use chrono::DateTime;
+use rusoto_s3::{HeadObjectRequest, S3Client, S3};
 use std::time::Duration;
 
 /// The state of synchronization between cloud storage and local storage.
@@ -45,7 +48,8 @@ pub fn poll_changes(
     }
 }
 
-fn sync_down_changes(s3: &S3Client, path: &String) {
+// TODO(mcqueenjordan): remove `pub`. it's just there for dev purposes.
+pub fn sync_down_changes(s3: &S3Client, path: &String) {
     // TODO(mcqueenjordan)
     // compare hashes...
     // for any local files whose timestamp is less than the remote timestamp:
@@ -53,4 +57,56 @@ fn sync_down_changes(s3: &S3Client, path: &String) {
     // write the in-memory manifest which was fetched
     let local_manifest = Manifest::from_local(path);
     let cloud_manifest = local_manifest.from_cloud(s3);
+    println!("{:?}", local_manifest);
+    println!("{:?}", cloud_manifest);
+    println!(
+        "{:?}",
+        get_remote_file_metadata(
+            &s3,
+            &local_manifest,
+            &"manifest_v2.json".to_owned()
+        )
+    );
+}
+
+fn get_remote_file_metadata(
+    s3: &S3Client,
+    manifest: &Manifest,
+    key: &String,
+) -> FileMetadata {
+    let request = HeadObjectRequest {
+        bucket: manifest.bucket_name.to_owned(),
+        key: key.to_owned(),
+        ..Default::default()
+    };
+
+    let response = s3.head_object(request).sync().expect("HEAD object failed");
+    println!(
+        "{}",
+        response.clone().last_modified.expect("whatever").to_owned()
+    );
+    let last_modified = DateTime::parse_from_str(
+        &response
+            .last_modified
+            .expect("Last-Modified issue")
+            .to_owned(),
+        // TODO(mcqueenjordan) found bug in chrono crate here. Will submit upstream pull request.
+        // https://github.com/chronotope/chrono/issues/288
+        "%a, %d %b %Y %H:%M:%S %Z",
+    )
+    .expect("Issue parsing DateTime")
+    .timestamp();
+
+    FileMetadata {
+        key: key.to_owned(),
+        hash: response
+            .e_tag
+            .expect("e-tag problem")
+            .trim_matches(|c| c == '/' || c == '"')
+            .to_owned(),
+        content_length: response
+            .content_length
+            .expect("Content-Length problem"),
+        last_modified: last_modified,
+    }
 }
