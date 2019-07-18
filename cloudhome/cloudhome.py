@@ -52,12 +52,12 @@ def sync_cloudhome(config):
     log = logging.getLogger(APP_NAME)
 
     bucket_manifest_filenames = config.bucket_manifests()
-    log.info("Opened config file {}, proceeding to sync {} buckets".format(
+    log.debug("Opened config file {}, proceeding to sync {} buckets".format(
         CLOUDHOME_CONFIG, len(bucket_manifest_filenames)))
 
     try:
         sync_all_buckets(s3, bucket_manifest_filenames)
-        log.info("Successfully synchronized all buckets ({}).".format(bucket_manifest_filenames))
+        log.debug("Successfully synchronized all buckets ({}).".format(bucket_manifest_filenames))
     except EndpointConnectionError as e:
         log.warn("Constant back-off of 10 seconds sleeping. Cannot reach AWS: {}".format(e))
         time.sleep(10)
