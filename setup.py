@@ -6,6 +6,6 @@ setup(
     name="cloudhome",
     version="1.0",
     packages=find_packages(where="cloudhome"),
-    entry_points={"console_scripts": ["cloudhome = cloudhome:main"]},
+    entry_points={"console_scripts": ["cloudhome = cloudhome.cloudhome:main"]},
     include_package_data=True,
 )
