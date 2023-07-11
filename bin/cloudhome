@@ -1,0 +1,6 @@
+#!/bin/bash
+
+PYTHON_EXECUTABLE_PATH=$(which python3)
+MAKERUN="${PYTHON_EXECUTABLE_PATH} /home/jmq/src/cloudhome/cloudhome/cloudhome.py"
+
+eval "${MAKERUN}"
